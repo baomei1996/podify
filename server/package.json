@@ -6,7 +6,8 @@
     "license": "MIT",
     "author": "bomi",
     "scripts": {
-        "dev": "tsnd --respawn --pretty --transpile-only ./src/index.ts"
+        "dev": "tsnd --respawn -r tsconfig-paths/register --pretty --transpile-only ./src/index.ts",
+        "build": "tsc && tsc-alias"
     },
     "dependencies": {
         "dotenv": "^16.3.1",
@@ -19,6 +20,8 @@
         "@types/mongoose": "^5.11.97",
         "@types/node": "^20.10.6",
         "ts-node-dev": "^2.0.0",
+        "tsc-alias": "^1.8.8",
+        "tsconfig-paths": "^4.2.0",
         "typescript": "^5.3.3"
     }
 }
