@@ -1,0 +1,20 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "server for the podify app",
+    "main": "index.js",
+    "license": "MIT",
+    "author": "bomi",
+    "scripts": {
+        "dev": "tsnd --respawn --pretty --transpile-only ./src/index.ts"
+    },
+    "dependencies": {
+        "express": "^4.18.2"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.21",
+        "@types/node": "^20.10.6",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.3"
+    }
+}
