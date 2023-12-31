@@ -4,7 +4,7 @@ import * as yup from "yup";
 export const validate = (schema: any): RequestHandler => {
     return async (req, res, next) => {
         if (!req.body) {
-            return res.json({
+            return res.status(422).json({
                 error: "Empty body is not expected!",
             });
         }
@@ -25,7 +25,7 @@ export const validate = (schema: any): RequestHandler => {
             next();
         } catch (error) {
             if (error instanceof yup.ValidationError) {
-                return res.json({ error: error.message });
+                return res.status(422).json({ error: error.message });
             }
         }
     };
