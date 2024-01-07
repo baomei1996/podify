@@ -10,8 +10,9 @@ import {
     verifyEmail,
     sendReVerificationToken,
     generateForgetPasswordLink,
-    isValidPassResetToken,
+    grantValid,
 } from "@/controllers/user";
+import { isValidPassResetToken } from "@/middleware/auth";
 
 const router = Router();
 
@@ -23,7 +24,8 @@ router.post("/forget-password", generateForgetPasswordLink);
 router.post(
     "/verify-pass-reset-token",
     validate(TokenAndIDValidation),
-    isValidPassResetToken
+    isValidPassResetToken,
+    grantValid
 );
 
 export default router;
