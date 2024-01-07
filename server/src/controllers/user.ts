@@ -3,11 +3,15 @@ import { RequestHandler } from "express";
 import { CreateUser, VerifyEmailRequest } from "@/@types/user";
 import User from "@/models/user";
 import { generateToken } from "@/utils/helper";
-import { sendForgetPasswordMail, sendVerificationMail } from "@/utils/mail";
+import {
+    sendForgetPasswordMail,
+    sendPassResetSuccessEmail,
+    sendVerificationMail,
+} from "@/utils/mail";
 import EmailVerificationToken from "@/models/emailVerificationToken";
 import { isValidObjectId } from "mongoose";
 import crypto from "crypto";
-import passwordResetToken from "@/models/passwordResetToken";
+import PasswordResetToken from "@/models/passwordResetToken";
 import { PASSWORD_RESET_LINK } from "@/utils/variables";
 
 export const create: RequestHandler = async (req: CreateUser, res) => {
@@ -90,13 +94,13 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
     // generate the link
     // https://yourapp.com/reset-password?token={token}&userId={userId}
 
-    await passwordResetToken.findOneAndDelete({
+    await PasswordResetToken.findOneAndDelete({
         owner: user._id,
     });
 
     const token = crypto.randomBytes(36).toString("hex");
 
-    await passwordResetToken.create({
+    await PasswordResetToken.create({
         owner: user._id,
         token,
     });
@@ -109,4 +113,29 @@ export const generateForgetPasswordLink: RequestHandler = async (req, res) => {
 
 export const grantValid: RequestHandler = async (req, res) => {
     res.json({ valid: true });
+};
+
+export const updatePassword: RequestHandler = async (req, res) => {
+    const { password, userId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(403).json({ message: "Unauthorized access!" });
+    }
+
+    const matched = await user.comparePassword(password);
+    if (matched) {
+        return res
+            .status(422)
+            .json({ message: "New password must be different!" });
+    }
+
+    user.password = password;
+    await user.save();
+
+    await PasswordResetToken.findOneAndDelete({ owner: user._id });
+
+    // send the success email
+    sendPassResetSuccessEmail({ name: user.name, email: user.email });
+    res.json({ message: "Password updated successfully!" });
 };
