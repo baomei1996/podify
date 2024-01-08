@@ -5,6 +5,7 @@ import {
     CreateUserSchema,
     TokenAndIDValidation,
     UpdatePasswordSchema,
+    SignInValidationSchema,
 } from "@/utils/validationSchema";
 import {
     create,
@@ -13,6 +14,7 @@ import {
     generateForgetPasswordLink,
     grantValid,
     updatePassword,
+    signIn,
 } from "@/controllers/user";
 import { isValidPassResetToken } from "@/middleware/auth";
 
@@ -35,5 +37,6 @@ router.post(
     isValidPassResetToken,
     updatePassword
 );
+router.post("/sign-in", validate(SignInValidationSchema), signIn);
 
 export default router;
