@@ -17,9 +17,8 @@ import {
     signIn,
 } from "@/controllers/user";
 import { isValidPassResetToken, mustAuth } from "@/middleware/auth";
-import { JwtPayload, verify } from "jsonwebtoken";
-import { JWT_SECRET } from "@/utils/variables";
-import User from "@/models/user";
+import fileParser from "@/middleware/fileParser";
+import { RequestWithFile } from "@/middleware/fileParser";
 
 const router = Router();
 
@@ -47,37 +46,9 @@ router.get("/is-auth", mustAuth, (req, res) => {
     });
 });
 
-import formidable from "formidable";
-import path from "path";
-import fs, { readdirSync } from "fs";
-
-router.post("/update-profile", async (req, res) => {
-    // handle the file upload
-
-    if (!req.headers["content-type"]?.startsWith("multipart/form-data")) {
-        return res.status(422).json({
-            error: "Only accept form data!",
-        });
-    }
-
-    const dir = path.join(__dirname, "../public/profiles");
-
-    try {
-        await readdirSync(dir);
-    } catch (error) {
-        await fs.mkdirSync(dir);
-    }
-
-    const form = formidable({
-        uploadDir: dir,
-        filename(name, ext, part, form) {
-            return Date.now() + "_" + part.originalFilename;
-        },
-    });
-
-    form.parse(req, (err, fields, files) => {
-        res.json({ uploaded: true });
-    });
+router.post("/update-profile", fileParser, (req: RequestWithFile, res) => {
+    console.log(req.files);
+    res.json({ message: "ok" });
 });
 
 export default router;
