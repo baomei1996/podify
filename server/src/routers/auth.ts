@@ -47,4 +47,37 @@ router.get("/is-auth", mustAuth, (req, res) => {
     });
 });
 
+import formidable from "formidable";
+import path from "path";
+import fs, { readdirSync } from "fs";
+
+router.post("/update-profile", async (req, res) => {
+    // handle the file upload
+
+    if (!req.headers["content-type"]?.startsWith("multipart/form-data")) {
+        return res.status(422).json({
+            error: "Only accept form data!",
+        });
+    }
+
+    const dir = path.join(__dirname, "../public/profiles");
+
+    try {
+        await readdirSync(dir);
+    } catch (error) {
+        await fs.mkdirSync(dir);
+    }
+
+    const form = formidable({
+        uploadDir: dir,
+        filename(name, ext, part, form) {
+            return Date.now() + "_" + part.originalFilename;
+        },
+    });
+
+    form.parse(req, (err, fields, files) => {
+        res.json({ uploaded: true });
+    });
+});
+
 export default router;
