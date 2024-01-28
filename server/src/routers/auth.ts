@@ -15,6 +15,7 @@ import {
     grantValid,
     updatePassword,
     signIn,
+    updateProfile,
 } from "@/controllers/user";
 import { isValidPassResetToken, mustAuth } from "@/middleware/auth";
 import fileParser from "@/middleware/fileParser";
@@ -46,9 +47,6 @@ router.get("/is-auth", mustAuth, (req, res) => {
     });
 });
 
-router.post("/update-profile", fileParser, (req: RequestWithFile, res) => {
-    console.log(req.files);
-    res.json({ message: "ok" });
-});
+router.post("/update-profile", mustAuth, fileParser, updateProfile);
 
 export default router;
