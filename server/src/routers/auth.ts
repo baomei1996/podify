@@ -16,10 +16,10 @@ import {
     updatePassword,
     signIn,
     updateProfile,
-} from "@/controllers/user";
+    sendProfile,
+} from "@/controllers/auth";
 import { isValidPassResetToken, mustAuth } from "@/middleware/auth";
 import fileParser from "@/middleware/fileParser";
-import { RequestWithFile } from "@/middleware/fileParser";
 
 const router = Router();
 
@@ -41,11 +41,7 @@ router.post(
     updatePassword
 );
 router.post("/sign-in", validate(SignInValidationSchema), signIn);
-router.get("/is-auth", mustAuth, (req, res) => {
-    res.json({
-        profile: req.user,
-    });
-});
+router.get("/is-auth", mustAuth, sendProfile);
 
 router.post("/update-profile", mustAuth, fileParser, updateProfile);
 

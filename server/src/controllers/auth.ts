@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 
 import { CreateUser, VerifyEmailRequest } from "@/@types/user";
 import User from "@/models/user";
-import { generateToken } from "@/utils/helper";
+import { formatProfile, generateToken } from "@/utils/helper";
 import {
     sendForgetPasswordMail,
     sendPassResetSuccessEmail,
@@ -161,15 +161,7 @@ export const signIn: RequestHandler = async (req, res) => {
     await user.save();
 
     res.json({
-        profile: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            verified: user.verified,
-            avatar: user.avatar?.url,
-            followers: user.followers.length,
-            following: user.followings.length,
-        },
+        profile: formatProfile(user),
         token,
     });
 };
@@ -217,4 +209,8 @@ export const updateProfile: RequestHandler = async (
 
         res.json({ avatar: user.avatar });
     }
+};
+
+export const sendProfile: RequestHandler = async (req, res) => {
+    res.json({ profile: req.user });
 };
