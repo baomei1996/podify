@@ -8,7 +8,7 @@ import { Router } from "express";
 const router = Router();
 
 router.post(
-    "/crete",
+    "/create",
     mustAuth,
     isVerified,
     fileParser,
