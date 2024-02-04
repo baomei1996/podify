@@ -60,3 +60,47 @@ export const createAudio: RequestHandler = async (
 
     res.status(200).json({ audio: newAudio });
 };
+
+export const updateAudio: RequestHandler = async (
+    req: CreateAudioRequest,
+    res
+) => {
+    const { title, about, category } = req.body;
+    const { audioId } = req.params;
+    const poster = req.files?.poster as formidable.File;
+    const ownerId = req.user.id;
+
+    const audio = await Audio.findOneAndUpdate(
+        { owner: ownerId, _id: audioId },
+        {
+            title,
+            about,
+            category,
+        },
+        { new: true }
+    );
+
+    if (!audio) return res.status(404).json({ error: "Audio not found!" });
+
+    if (poster) {
+        if (audio.poster?.publicId) {
+            await cloudinary.uploader.destroy(audio.poster.publicId);
+        }
+
+        const posterRes = await cloudinary.uploader.upload(poster.filepath, {
+            width: 300,
+            height: 300,
+            crop: "thumb",
+            gravity: "face",
+        });
+
+        audio.poster = {
+            url: posterRes.secure_url,
+            publicId: posterRes.public_id,
+        };
+
+        await audio.save();
+    }
+
+    res.status(200).json({ audio });
+};
