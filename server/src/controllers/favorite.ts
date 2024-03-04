@@ -48,5 +48,18 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
 
         status = "added";
     }
+
+    if (status === "added") {
+        await Audio.findByIdAndUpdate(audioId, {
+            $addToSet: { likes: req.user.id },
+        });
+    }
+
+    if (status === "removed") {
+        await Audio.findByIdAndUpdate(audioId, {
+            $pull: { likes: req.user.id },
+        });
+    }
+
     res.status(200).json({ status });
 };
