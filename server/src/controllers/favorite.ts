@@ -1,3 +1,4 @@
+import { PopulateFavList } from "@/@types/audio";
 import Audio from "@/models/audio";
 import Favorite from "@/models/favorite";
 import { RequestHandler } from "express";
@@ -62,4 +63,48 @@ export const toggleFavorite: RequestHandler = async (req, res) => {
     }
 
     res.status(200).json({ status });
+};
+
+export const getFavorite: RequestHandler = async (req, res) => {
+    const userId = req.user.id;
+
+    const favorite = await Favorite.findOne({ owner: userId }).populate<{
+        items: PopulateFavList[];
+    }>({
+        path: "items",
+        populate: {
+            path: "owner",
+        },
+    });
+
+    if (!favorite) return res.json({ audios: [] });
+
+    const audios = favorite.items.map((item) => {
+        return {
+            id: item._id,
+            title: item.title,
+            category: item.category,
+            file: item.file.url,
+            poster: item.poster?.url,
+            owner: {
+                name: item.owner.name,
+                id: item.owner._id,
+            },
+        };
+    });
+
+    res.json(audios);
+};
+
+export const getIsFavorite: RequestHandler = async (req, res) => {
+    const audioId = req.query.audioId as string;
+
+    if (!isValidObjectId(audioId))
+        return res.status(422).json({ error: "Audio is invalid!" });
+
+    const favorite = await Favorite.findOne({
+        owner: req.user.id,
+        items: audioId,
+    });
+    res.json({ result: favorite ? true : false });
 };
