@@ -1,8 +1,7 @@
-import { CreatePlaylistRequest } from "@/@types/audio";
+import { CreatePlaylistRequest, UpdatePlaylistRequest } from "@/@types/audio";
 import Audio from "@/models/audio";
 import Playlist from "@/models/playlist";
 import { RequestHandler } from "express";
-import { ObjectId, Types } from "mongoose";
 
 export const createPlaylist: RequestHandler = async (
     req: CreatePlaylistRequest,
@@ -34,4 +33,45 @@ export const createPlaylist: RequestHandler = async (
     await newPlaylist.save();
 
     res.status(200).json({ playlist: newPlaylist });
+};
+
+export const updatePlaylist: RequestHandler = async (
+    req: UpdatePlaylistRequest,
+    res
+) => {
+    const { id, item, title, visibility } = req.body;
+
+    const playlist = await Playlist.findOneAndUpdate(
+        { _id: id, owner: req.user.id },
+        {
+            title,
+            visibility,
+        },
+        { new: true }
+    );
+
+    if (!playlist) {
+        return res.status(404).json({ error: "could not found the playlist!" });
+    }
+
+    if (item) {
+        const audio = await Audio.findById(item);
+        if (!audio) {
+            return res
+                .status(404)
+                .json({ error: "could not found the audio!" });
+        }
+
+        await Playlist.findByIdAndUpdate(playlist._id, {
+            $addToSet: { items: item },
+        });
+    }
+
+    res.json({
+        playlist: {
+            id: playlist._id,
+            title: playlist.title,
+            visibility: playlist.visibility,
+        },
+    });
 };
