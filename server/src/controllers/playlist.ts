@@ -119,10 +119,18 @@ export const deletePlaylist: RequestHandler = async (req, res) => {
 };
 
 export const getPlaylistByProfile: RequestHandler = async (req, res) => {
+    const { pageNo = "0", limit = "20" } = req.query as {
+        pageNo: string;
+        limit: string;
+    };
+
     const data = await Playlist.find({
         owner: req.user.id,
         visibility: { $ne: "auto" },
-    }).sort("-createAt");
+    })
+        .skip(parseInt(pageNo) * parseInt(limit))
+        .limit(parseInt(limit))
+        .sort("-createAt");
 
     const playlist = data.map((item) => {
         return {
